@@ -12,38 +12,7 @@ public class King extends ChessGamePiece
 	{
 		this.name=name;
 		this.colour=colour;
-	}
-	
-//	public List<String> getThreatFreeLocations(List<String> possibleMoves,Map<String,ChessGamePiece> gameBoard)
-//	{
-//		Set<Entry<String, ChessGamePiece>> entrySet = gameBoard.entrySet();
-//		Iterator<Map.Entry<String,ChessGamePiece>> iterator = entrySet.iterator();
-//		
-//		while(iterator.hasNext())
-//		{
-//			Map.Entry<String,ChessGamePiece> entry = iterator.next();
-//			if(entry.getValue()!=null && entry.getValue().getColour()!=colour)
-//			{	System.out.println(entry.getKey()+" "+entry.getValue());
-//				for(String str:possibleMoves)
-//				{
-//					if(entry.getValue().getPossibleMoves(gameBoard, entry.getKey()).contains(str))
-//					{
-//						possibleMoves.remove(str);
-//						break;
-//					}
-//				}
-//			}
-//		}
-		
-//		for(ChessGamePiece piece:gameBoard.values())
-//		{			
-//			if(piece!=null && piece.getColour()!=colour)
-//			{
-//				if(piece.getPossibleMoves(gameBoard, currentPosition));
-//			}
-//		}
-//		return possibleMoves;
-//	}
+	}	
 		
 	@Override
 	public List<String> getPossibleMoves(Map<String,ChessGamePiece> gameBoard, String currentPosition) 
@@ -124,8 +93,7 @@ public class King extends ChessGamePiece
 			e.printStackTrace();
 		}
 		
-//		possiblePositions=getThreatFreeLocations(possiblePositions,gameBoard);
-		possiblePositions.removeAll(Game.getUnSafeCells(colour));
+//		possiblePositions.removeAll(Game.getUnSafeCells(colour));
 		
 		return possiblePositions;
 	}
@@ -137,13 +105,13 @@ public class King extends ChessGamePiece
 		return true;
 	}
 
-	public boolean validateQueenSideCastling(Map<String,ChessGamePiece> gameBoard,Colour colour)
+	public boolean validateQueenSideCastling(Map<String,ChessGamePiece> gameBoard,Colour colour, List<String> list)
 	{ 
 		if(colour==Colour.WHITE)
 		{
 			if(gameBoard.get("b1")==null&&gameBoard.get("c1")==null&&gameBoard.get("d1")==null)
 			{
-				for(String loc:Game.getUnSafeCells(colour))
+				for(String loc:list)
 				{
 					if(loc.equals("a1")||loc.equals("b1")||loc.equals("c1")||loc.equals("d1")||loc.equals("e1"))
 					{
@@ -162,7 +130,7 @@ public class King extends ChessGamePiece
 		{
 			if(gameBoard.get("b8")==null&&gameBoard.get("c8")==null&&gameBoard.get("d8")==null)
 			{
-				for(String loc:Game.getUnSafeCells(colour))
+				for(String loc:list)
 				{
 					if(loc.equals("a8")||loc.equals("b8")||loc.equals("c8")||loc.equals("d8")||loc.equals("e8"))
 					{
@@ -184,13 +152,13 @@ public class King extends ChessGamePiece
 		return true;
 	}
 	
-	public boolean validateKingSideCastling(Map<String,ChessGamePiece> gameBoard,Colour colour)
+	public boolean validateKingSideCastling(Map<String,ChessGamePiece> gameBoard,Colour colour, List<String> list)
 	{
 		if(colour==Colour.WHITE)
 		{
 			if(gameBoard.get("f1")==null&&gameBoard.get("g1")==null)
 			{
-				for(String loc:Game.getUnSafeCells(colour))
+				for(String loc:list)
 				{
 					if(loc.equals("e1")||loc.equals("f1")||loc.equals("g1")||loc.equals("h1"))
 					{
@@ -209,7 +177,7 @@ public class King extends ChessGamePiece
 		{
 			if(gameBoard.get("f8")==null&&gameBoard.get("g8")==null)
 			{
-				for(String loc:Game.getUnSafeCells(colour))
+				for(String loc:list)
 				{
 					if(loc.equals("e8")||loc.equals("f8")||loc.equals("g8")||loc.equals("h8"))
 					{

@@ -12,11 +12,11 @@ import java.util.Map.Entry;
 
 public class Game 
 {
-	Map<String,ChessGamePiece> gameBoard;	
-	List<ChessGamePiece> killedPieces;
+	private Map<String,ChessGamePiece> gameBoard;		
+	private Map<ChessGamePiece,List<String>> simulatedPossibleMoves;
+	private List<ChessGamePiece> killedPieces;
+	public  static final String validPositions[][] = new String[8][8];
 	
-	public static final String validPositions[][] = new String[8][8];
-	public static Map<ChessGamePiece,List<String>> simulatedPossibleMoves;
 	
 	static
 	{  /*populate values for validPosition dynamically  (a1..h8)*/
@@ -44,38 +44,12 @@ public class Game
 		simulatedPossibleMoves = new HashMap<>();
 		initialize();
 		killedPieces = new ArrayList<ChessGamePiece>();
-	}
-	
-	public static List<String> getUnSafeCells(Colour colour)
-	{
-		List<String> unsafeCells = new ArrayList<String>();
-		Set<Map.Entry<ChessGamePiece, List<String>>> mapEntrySet =  simulatedPossibleMoves.entrySet();
-		
-		for(Map.Entry<ChessGamePiece, List<String>> mapEntry: mapEntrySet)
-		{
-			if(mapEntry.getKey().colour!=colour)
-			{
-				unsafeCells.addAll(mapEntry.getValue());
-			}
-		}
-		
-		return unsafeCells;
-	}
+	}	
 	
 	private boolean initialize()
 	{
 		//Clear contents of Game Board
-		gameBoard.clear();
-		simulatedPossibleMoves.clear();
-		
-		//Populate keys
-//		for(int i=0;i<8;i++)
-//		{
-//			for(int j=0;j<8;j++)
-//			{
-//				gameBoard.put(Game.validPositions[i][j], null);
-//			}
-//		}
+		gameBoard.clear();		
 		
 		//Add Rook's
 		gameBoard.put("a1", new Rook("wR1",Colour.WHITE));
@@ -113,8 +87,15 @@ public class Game
 			gameBoard.put(((char)i)+"7",new Pawn("bp"+(i-96),Colour.BLACK,true));
 		}
 		
-		
-		//Initialize possible moves
+		simulatePossibleMoves(gameBoard);
+							
+		return true;
+	}
+	
+	public void simulatePossibleMoves(Map<String,ChessGamePiece> gameBoard)
+	{		
+		List<String> kingLocations = new ArrayList<>();
+		simulatedPossibleMoves.clear();
 		Set<Entry<String, ChessGamePiece>> entrySet = gameBoard.entrySet();
 		Iterator<Map.Entry<String,ChessGamePiece>> iterator = entrySet.iterator();
 		
@@ -123,14 +104,39 @@ public class Game
 			Map.Entry<String,ChessGamePiece> entry = iterator.next();
 			if(entry.getValue()!=null)
 			{					
-				simulatedPossibleMoves.put(entry.getValue(), entry.getValue().getPossibleMoves(gameBoard, entry.getKey()));				
-			}
-		}		
+				simulatedPossibleMoves.put(entry.getValue(), entry.getValue().getPossibleMoves(gameBoard, entry.getKey()));
+				
+				if(entry.getValue() instanceof King)
+				{
+					kingLocations.add(entry.getKey());
+				}
+			}					
+		}
 		
+		//remove unsafe locations for Kings
+//		for(String location:kingLocations)
+//		{
+//			King king = (King) gameBoard.get(location);
+//			simulatedPossibleMoves.get(king).removeAll(getUnSafeCells(king.getColour()));
+//		}
 		
-						
-		return true;
 	}
+	
+	public List<String> getUnSafeCells(Colour colour)
+	{
+		List<String> unsafeCells = new ArrayList<String>();
+		Set<Map.Entry<ChessGamePiece, List<String>>> mapEntrySet =  simulatedPossibleMoves.entrySet();
+		
+		for(Map.Entry<ChessGamePiece, List<String>> mapEntry: mapEntrySet)
+		{
+			if(mapEntry.getKey().colour!=colour)
+			{
+				unsafeCells.addAll(mapEntry.getValue());
+			}
+		}
+		
+		return unsafeCells;
+	}	
 	
 	public void startGame()
 	{
@@ -369,14 +375,14 @@ public class Game
 				return false;				
 			}
 			
-			if(colour==Colour.WHITE&&king.validateQueenSideCastling(gameBoard,colour))
+			if(colour==Colour.WHITE&&king.validateQueenSideCastling(gameBoard,colour,getUnSafeCells(colour)))
 			{
 				gameBoard.put("c1",gameBoard.get("e1"));
 				gameBoard.put("d1",gameBoard.get("a1"));
 				gameBoard.put("e1",null);
 				gameBoard.put("a1",null);
 			}
-			else if(colour==Colour.BLACK&&king.validateQueenSideCastling(gameBoard,colour))
+			else if(colour==Colour.BLACK&&king.validateQueenSideCastling(gameBoard,colour,getUnSafeCells(colour)))
 			{
 				gameBoard.put("c8",gameBoard.get("e8"));
 				gameBoard.put("d8",gameBoard.get("a8"));
@@ -417,14 +423,14 @@ public class Game
 				return false;				
 			}
 			
-			if(colour==Colour.WHITE&&king.validateKingSideCastling(gameBoard,colour))
+			if(colour==Colour.WHITE&&king.validateKingSideCastling(gameBoard,colour,getUnSafeCells(colour)))
 			{
 				gameBoard.put("g1",gameBoard.get("e1"));
 				gameBoard.put("f1",gameBoard.get("h1"));
 				gameBoard.put("e1",null);
 				gameBoard.put("h1",null);
 			}
-			else if(colour==Colour.BLACK&&king.validateKingSideCastling(gameBoard,colour))
+			else if(colour==Colour.BLACK&&king.validateKingSideCastling(gameBoard,colour,getUnSafeCells(colour)))
 			{
 				gameBoard.put("g8",gameBoard.get("e8"));
 				gameBoard.put("f8",gameBoard.get("h8"));
