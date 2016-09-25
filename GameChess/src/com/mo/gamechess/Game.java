@@ -87,12 +87,12 @@ public class Game
 			gameBoard.put(((char)i)+"7",new Pawn("bp"+(i-96),Colour.BLACK,true));
 		}
 		
-		simulatePossibleMoves(gameBoard);
+		simulatePossibleMoves();
 							
 		return true;
 	}
 	
-	public void simulatePossibleMoves(Map<String,ChessGamePiece> gameBoard)
+	public void simulatePossibleMoves()
 	{		
 		List<String> kingLocations = new ArrayList<>();
 		simulatedPossibleMoves.clear();
@@ -113,6 +113,7 @@ public class Game
 			}					
 		}
 		
+		//commented below code, as player should be able to judge safe location for his King
 		//remove unsafe locations for Kings
 //		for(String location:kingLocations)
 //		{
@@ -298,9 +299,6 @@ public class Game
 				System.out.println("Invalid Move: No piece available in "+sourceLocation+"");
 				return false;
 			}
-//			else if(pieceToBeMoved.colour==colour&&pieceToBeMoved.getPossibleMoves(gameBoard, sourceLocation).contains(destinationLocation))
-			
-			simulatedPossibleMoves.put(pieceToBeMoved, pieceToBeMoved.getPossibleMoves(gameBoard, sourceLocation));
 			
 			if(pieceToBeMoved.colour==colour&&simulatedPossibleMoves.get(pieceToBeMoved).contains(destinationLocation))
 			{
@@ -342,9 +340,7 @@ public class Game
 			{
 				Pawn pawn=(Pawn)gameBoard.get(destinationLocation);
 				pawn.setInInitialPosition(false);			
-			}	
-			
-			simulatedPossibleMoves.put(pieceToBeMoved, pieceToBeMoved.getPossibleMoves(gameBoard, destinationLocation));
+			}							
 		}	
 		else if(moveDescription.equals("O-O-O"))
 		{
@@ -448,6 +444,8 @@ public class Game
 			return false;
 		}
 		
+		//SimulatePossibleMoves
+		simulatePossibleMoves();
 		return true;
 	}
 }
