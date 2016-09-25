@@ -16,6 +16,7 @@ public class Game
 	private Map<ChessGamePiece,List<String>> simulatedPossibleMoves;
 	private List<ChessGamePiece> killedPieces;
 	private Map<Integer,List<String>> gameMoves;
+	private boolean inCheckMode;
 	public  static final String validPositions[][] = new String[8][8];
 	
 	
@@ -46,6 +47,7 @@ public class Game
 		initialize();
 		killedPieces = new ArrayList<ChessGamePiece>();
 		gameMoves = new HashMap<>();
+		inCheckMode=false;
 	}	
 	
 	private boolean initialize()
@@ -54,10 +56,10 @@ public class Game
 		gameBoard.clear();		
 		
 		//Add Rook's
-		gameBoard.put("a1", new Rook("wR1",Colour.WHITE));
-		gameBoard.put("h1", new Rook("wR2",Colour.WHITE));
-		gameBoard.put("a8", new Rook("bR1",Colour.BLACK));
-		gameBoard.put("h8", new Rook("bR2",Colour.BLACK));
+		gameBoard.put("a1", new Rook("wR1",Colour.WHITE,true));
+		gameBoard.put("h1", new Rook("wR2",Colour.WHITE,true));
+		gameBoard.put("a8", new Rook("bR1",Colour.BLACK,true));
+		gameBoard.put("h8", new Rook("bR2",Colour.BLACK,true));
 		
 		//Add knights
 		gameBoard.put("b1", new Knight("wN1",Colour.WHITE));
@@ -76,8 +78,8 @@ public class Game
 		gameBoard.put("d8", new Queen("bQ ",Colour.BLACK));
 		
 		//Add King's		
-		gameBoard.put("e1", new King("wK ",Colour.WHITE));		
-		gameBoard.put("e8", new King("bK ",Colour.BLACK));
+		gameBoard.put("e1", new King("wK ",Colour.WHITE,true));		
+		gameBoard.put("e8", new King("bK ",Colour.BLACK,true));
 		
 		//Add Pawn's
 		for(int i=97;i<105;i++)
@@ -125,6 +127,7 @@ public class Game
 		
 	}
 	
+	//Returns list of all possible moves for all opposite colour pieces
 	public List<String> getUnSafeCells(Colour colour)
 	{
 		List<String> unsafeCells = new ArrayList<String>();
@@ -140,6 +143,21 @@ public class Game
 		
 		return unsafeCells;
 	}	
+	
+	public String getKingLocation(Colour colour)
+	{
+		Set<Map.Entry<String, ChessGamePiece>> mapEntrySet =  gameBoard.entrySet();
+		
+		for(Map.Entry<String, ChessGamePiece> mapEntry: mapEntrySet)
+		{
+			if((mapEntry.getValue() instanceof King) && mapEntry.getValue().colour==colour)
+			{
+				return mapEntry.getKey();
+			}
+		}
+		
+		return null;
+	}
 	
 	public void startGame()
 	{
@@ -195,6 +213,8 @@ public class Game
 	{
 		Set<Map.Entry<Integer,List<String>>> entrySet = gameMoves.entrySet();
 		
+		System.out.println("");
+		System.out.println("Game Moves:");
 		for(Map.Entry<Integer, List<String>> entry:entrySet)
 		{
 			System.out.println("");
@@ -222,6 +242,20 @@ public class Game
 		{
 			e.printStackTrace();
 			return "Exit";
+		}
+	}
+	
+	public void rollback(String moveType,String sourceLocation,String destinationLocation,ChessGamePiece pieceKilled)
+	{
+		if(moveType.equals("-"))
+		{
+			gameBoard.put(sourceLocation,gameBoard.get(destinationLocation));
+			gameBoard.put(destinationLocation,pieceKilled);	
+		}
+		else if(moveType.equals("X"))
+		{
+			gameBoard.put(sourceLocation,gameBoard.get(destinationLocation));
+			gameBoard.put(destinationLocation,pieceKilled);
 		}
 	}
 	
@@ -303,21 +337,30 @@ public class Game
 	
 	public boolean makeAMove(String moveDescription,Colour colour)
 	{
+		String kingLocation;
+//		String pieceType;
+		String sourceLocation;
+		String moveType;
+		String destinationLocation;
+		ChessGamePiece pieceToBeMoved;
+		ChessGamePiece pieceKilled;
 		
 		if(moveDescription==null)
 		{
 			System.out.println("Invalid input: Move cannot be NULL");
 			return false;
 		}
-		else if(moveDescription.length()==6)
+		else if(moveDescription.length()==6 
+				|| (moveDescription.length()==7 && (moveDescription.substring(6).equals("+")))
+				|| (moveDescription.length()==8 && (moveDescription.substring(6,7).equals("++"))))
 		{
-	//		String pieceType = ""+moveDescription.charAt(0);
-			String sourceLocation = moveDescription.substring(1,3);
-			String moveType = moveDescription.substring(3,4);
-			String destinationLocation = moveDescription.substring(4, 6);
+	//		pieceType = ""+moveDescription.charAt(0);
+			sourceLocation = moveDescription.substring(1,3);
+			moveType = moveDescription.substring(3,4);
+			destinationLocation = moveDescription.substring(4, 6);
 			
 			
-			ChessGamePiece pieceToBeMoved = gameBoard.get(sourceLocation);
+			pieceToBeMoved = gameBoard.get(sourceLocation);
 			
 			//Check if the move requested is possible or not
 			if(pieceToBeMoved == null)
@@ -328,7 +371,7 @@ public class Game
 			
 			if(pieceToBeMoved.colour==colour&&simulatedPossibleMoves.get(pieceToBeMoved).contains(destinationLocation))
 			{
-				ChessGamePiece pieceKilled=gameBoard.put(destinationLocation, gameBoard.get(sourceLocation));
+				pieceKilled=gameBoard.put(destinationLocation, gameBoard.get(sourceLocation));
 				gameBoard.put(sourceLocation,null);
 				
 				if(moveType.equals("X") && pieceKilled!=null)
@@ -338,15 +381,13 @@ public class Game
 				else if(moveType.equals("X") && pieceKilled==null)
 				{
 					System.out.println("Invalid move, No opponent peiece to kill in destination position, rolling back the move");
-					gameBoard.put(sourceLocation,gameBoard.get(destinationLocation));
-					gameBoard.put(destinationLocation,null);
+					rollback(moveType,sourceLocation,destinationLocation,pieceKilled);
 					return false;
 				}
 				else if(moveType.equals("-") && pieceKilled!=null)
 				{
 					System.out.println("Invalid move, opponent piece will be killed with this move, use 'X' instead of'-' to indicate kill ");
-					gameBoard.put(sourceLocation,gameBoard.get(destinationLocation));
-					gameBoard.put(destinationLocation,pieceKilled);
+					rollback(moveType,sourceLocation,destinationLocation,pieceKilled);
 					return false;
 				}
 			}
@@ -366,35 +407,99 @@ public class Game
 			{
 				Pawn pawn=(Pawn)gameBoard.get(destinationLocation);
 				pawn.setInInitialPosition(false);			
-			}							
+			}
+			else if(gameBoard.get(destinationLocation) instanceof Rook)
+			{
+				Rook rook=(Rook)gameBoard.get(destinationLocation);
+				rook.setInInitialPosition(false);				
+			}
+			else if(gameBoard.get(destinationLocation) instanceof King)
+			{
+				King kingTemp=(King)gameBoard.get(destinationLocation);
+				kingTemp.setInInitialPosition(false);				
+			}
+			
+			simulatePossibleMoves();
+			
+			if(inCheckMode)
+			{
+				kingLocation=getKingLocation(colour);
+				if(getUnSafeCells(colour).contains(kingLocation))
+					{
+						inCheckMode=true;
+						System.out.println("You are in check mode, the recent move doesn't save the King from Check");
+						rollback(moveType,sourceLocation,destinationLocation,pieceKilled);
+						return false;
+					}
+				else
+					{
+						inCheckMode=true;
+						return true;
+					}
+			}
+			else if(moveDescription.length()>6)
+			{
+				for(Colour tempColour:Colour.values())
+				{
+					if(tempColour!=colour)
+					{
+						kingLocation=getKingLocation(tempColour);
+						if(getUnSafeCells(tempColour).contains(kingLocation))
+							{
+								inCheckMode=true;
+								
+								return true;
+							}
+						else
+							{
+								System.out.println("Not a valid move for Check: Move made doesn't put the opposite king in Risk");
+								inCheckMode=false;
+								return false;
+							}						
+					}
+				}
+				
+				System.out.println("Failed to find King location");
+				return false;				
+			}
 		}	
 		else if(moveDescription.equals("O-O-O"))
 		{
 			King king;
-			String location;
+			Rook rook;
+			String rookLocation;
 			
 			if(colour==Colour.WHITE) 
 			{
-				location="e1";				
+				rookLocation="a1";
+				kingLocation="e1";				
 			}
 			else
 			{
-				location="e8";
+				rookLocation="a8";
+				kingLocation="e8";
 			}
 			
 			try
 			{
-				king = (King)gameBoard.get(location);
+				king = (King)gameBoard.get(kingLocation);
+				rook = (Rook)gameBoard.get(rookLocation);
 			}
 			catch(ClassCastException e)
 			{
-				System.out.println(" King is not available at "+location+" Castling cannot be done");
+				System.out.println(" King/Rook is not available at their respective location "+kingLocation+" and "+rookLocation+"; Castling cannot be done");
 				return false;
 			}
 			catch(NullPointerException e)
 			{
-				System.out.println(" No object is available at "+location+" Castling cannot be done");
+				System.out.println(" No object is available at locations a"+kingLocation+"/"+rookLocation+" Castling cannot be done");
 				return false;				
+			}
+			
+			if(king.isInInitialPosition()==false || rook.isInInitialPosition()==false)
+			{
+				System.out.println("King and Rook should not be moved from their initial position to allow castling ");
+				return false;
 			}
 			
 			if(colour==Colour.WHITE&&king.validateQueenSideCastling(gameBoard,colour,getUnSafeCells(colour)))
@@ -419,30 +524,40 @@ public class Game
 		else if(moveDescription.equals("O-O"))
 		{
 			King king;
-			String location;
+			Rook rook;
+			String rookLocation;
 			
 			if(colour==Colour.WHITE) 
 			{
-				location="e1";				
+				kingLocation="e1";		
+				rookLocation="h1";
 			}
 			else
 			{
-				location="e8";
+				kingLocation="e8";
+				rookLocation="h8";
 			}
 			
 			try
 			{
-				king = (King)gameBoard.get(location);
+				king = (King)gameBoard.get(kingLocation);
+				rook = (Rook)gameBoard.get(rookLocation);
 			}
 			catch(ClassCastException e)
 			{
-				System.out.println(" King is not available at "+location+" Castling cannot be done");
+				System.out.println(" King/Rook is not available at their respective location "+kingLocation+" and "+rookLocation+"; Castling cannot be done");
 				return false;
 			}
 			catch(NullPointerException e)
 			{
-				System.out.println(" No object is available at "+location+" Castling cannot be done");
+				System.out.println(" No object is available at locations a"+kingLocation+"/"+rookLocation+" Castling cannot be done");
 				return false;				
+			}
+			
+			if(king.isInInitialPosition()==false || rook.isInInitialPosition()==false)
+			{
+				System.out.println("King and Rook should not be moved from their initial position to allow castling ");
+				return false;
 			}
 			
 			if(colour==Colour.WHITE&&king.validateKingSideCastling(gameBoard,colour,getUnSafeCells(colour)))

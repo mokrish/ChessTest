@@ -7,11 +7,21 @@ import java.util.ArrayList;
 public class King extends ChessGamePiece 
 {
 
-	
-	public King(String name,Colour colour)
+	private boolean inInitialPosition;	
+
+	public King(String name,Colour colour,boolean inInitialPosition)
 	{
 		this.name=name;
 		this.colour=colour;
+		this.inInitialPosition = inInitialPosition;
+	}	
+	
+	public boolean isInInitialPosition() {
+		return inInitialPosition;
+	}
+
+	public void setInInitialPosition(boolean inInitialPosition) {
+		this.inInitialPosition = inInitialPosition;
 	}	
 		
 	@Override

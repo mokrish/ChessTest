@@ -3,15 +3,27 @@ package com.mo.gamechess;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+ 
 
 public class Rook extends ChessGamePiece 
 {	 
-	
-	public Rook(String name,Colour colour)
+	private boolean inInitialPosition;
+	public Rook(String name,Colour colour,boolean inInitialPosition)
 	{
 		this.name=name;	
 		this.colour=colour;
+		this.inInitialPosition=inInitialPosition;
 	}	
+	
+	public void setInInitialPosition(boolean inInitiailPosition)
+	{
+		this.inInitialPosition=inInitiailPosition;
+	}
+	
+	public boolean isInInitialPosition()
+	{
+		return inInitialPosition;
+	}
 
 	@Override
 	public List<String> getPossibleMoves(Map<String, ChessGamePiece> gameBoard, String currentPosition) 
