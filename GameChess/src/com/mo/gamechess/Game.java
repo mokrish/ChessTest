@@ -15,6 +15,7 @@ public class Game
 	private Map<String,ChessGamePiece> gameBoard;		
 	private Map<ChessGamePiece,List<String>> simulatedPossibleMoves;
 	private List<ChessGamePiece> killedPieces;
+	private Map<Integer,List<String>> gameMoves;
 	public  static final String validPositions[][] = new String[8][8];
 	
 	
@@ -44,6 +45,7 @@ public class Game
 		simulatedPossibleMoves = new HashMap<>();
 		initialize();
 		killedPieces = new ArrayList<ChessGamePiece>();
+		gameMoves = new HashMap<>();
 	}	
 	
 	private boolean initialize()
@@ -142,15 +144,21 @@ public class Game
 	public void startGame()
 	{
 		boolean validMove=false;
+		int counter=0;
+		List<String> tempList = new ArrayList<>();
+		killedPieces.clear();
+		gameMoves.clear();
 		String str="begin";
 		System.out.println("");
 		System.out.println("");
 		System.out.println("Start game White's turn");
 		try
 		(BufferedReader br = new BufferedReader(new InputStreamReader(System.in));)
-		{
+		{			
 			while(!str.equals("Exit"))
-			{	
+			{
+				counter++;
+				tempList.clear();
 				for(Colour colour:Colour.values())
 				{
 					printBoard();
@@ -165,6 +173,7 @@ public class Game
 						if(!str.equals("Exit"))
 						{
 							validMove=makeAMove(str,colour);
+							tempList.add(str);
 						}
 						else
 						{
@@ -173,12 +182,28 @@ public class Game
 					}
 					
 				}
+				gameMoves.put(counter, tempList);
 			}
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public void printAllMoves()
+	{
+		Set<Map.Entry<Integer,List<String>>> entrySet = gameMoves.entrySet();
+		
+		for(Map.Entry<Integer, List<String>> entry:entrySet)
+		{
+			System.out.println(" "+entry.getKey()+":   ");
+			for(String moves:entry.getValue())
+			{
+				System.out.print(moves+"     ");
+			}
+		}
+		
 	}
 	
 	public String getInput()
