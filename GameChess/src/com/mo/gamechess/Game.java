@@ -233,24 +233,25 @@ public class Game
 		
 	}
 	
-	public String getInput()
-	{
-		try
-		(BufferedReader br = new BufferedReader(new InputStreamReader(System.in));)
-		{
-			System.out.println("Enter your move:");
-//			System.out.println(br.readLine());
-			String tmpString = br.readLine();
-			br.close();
-			return tmpString;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			return "Exit";
-		}
-	}
+//	public String getInput()
+//	{
+//		try
+//		(BufferedReader br = new BufferedReader(new InputStreamReader(System.in));)
+//		{
+//			System.out.println("Enter your move:");
+////			System.out.println(br.readLine());
+//			String tmpString = br.readLine();
+//			br.close();
+//			return tmpString;
+//		}
+//		catch(Exception e)
+//		{
+//			e.printStackTrace();
+//			return "Exit";
+//		}
+//	}
 	
+	//To undo the changes made,in case the move made is invalid
 	public void rollback(String moveType,String sourceLocation,String destinationLocation,ChessGamePiece pieceKilled)
 	{
 		if(moveType.equals("-"))
@@ -439,7 +440,7 @@ public class Game
 					}
 				else
 					{
-						inCheckMode=true;
+						inCheckMode=false;
 						return true;
 					}
 			}
