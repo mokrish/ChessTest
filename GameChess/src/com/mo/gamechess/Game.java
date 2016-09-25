@@ -158,7 +158,7 @@ public class Game
 			while(!str.equals("Exit"))
 			{
 				counter++;
-				tempList.clear();
+				tempList = new ArrayList<>();
 				for(Colour colour:Colour.values())
 				{
 					printBoard();
@@ -172,14 +172,14 @@ public class Game
 						str=br.readLine();
 						if(!str.equals("Exit"))
 						{
-							validMove=makeAMove(str,colour);
-							tempList.add(str);
+							validMove=makeAMove(str,colour);							
 						}
 						else
 						{
 							validMove=true;
 						}
 					}
+					tempList.add(str);
 					
 				}
 				gameMoves.put(counter, tempList);
@@ -197,7 +197,8 @@ public class Game
 		
 		for(Map.Entry<Integer, List<String>> entry:entrySet)
 		{
-			System.out.println(" "+entry.getKey()+":   ");
+			System.out.println("");
+			System.out.print(" "+entry.getKey()+":   ");
 			for(String moves:entry.getValue())
 			{
 				System.out.print(moves+"     ");
