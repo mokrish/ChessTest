@@ -184,6 +184,12 @@ public class Game
 					{
 						validMove=false;
 					}
+					
+					if(inCheckMode)
+					{
+						System.out.println("in CHECK mode: Save your King");
+					}
+					
 					while(!validMove)
 					{
 						System.out.print(colour.name()+"'s Turn => Enter your move:");
